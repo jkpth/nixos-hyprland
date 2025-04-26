@@ -17,7 +17,7 @@
           ./hosts/virtualbox-vm/configuration.nix
           home-manager.nixosModules.home-manager
           {
-            home-manager.users.blim = import ./hosts/virtualbox-vm/home.nix;
+            home-manager.users.jkpth = import ./hosts/virtualbox-vm/home.nix;
           }
         ];
       };
