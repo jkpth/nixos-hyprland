@@ -3,15 +3,18 @@
 {
   imports = [ ./hardware-configuration.nix ];
 
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  boot.loader.grub.enable = true;
+  boot.loader.grub.devices = [ "nodev" ]; # safe in VM
+
   users.users.jkpth = {
     isNormalUser = true;
     extraGroups = [ "wheel" "networkmanager" ];
     shell = pkgs.zsh;
   };
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  networking.hostName = "virtualbox-vm";
+  programs.zsh.enable = true;
 
   environment.systemPackages = with pkgs; [
     git
@@ -22,11 +25,6 @@
   ];
 
   services.openssh.enable = true;
-  users.users.blim = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" ]; # sudo access
-    shell = pkgs.zsh;
-  };
 
   system.stateVersion = "24.05";
 }
