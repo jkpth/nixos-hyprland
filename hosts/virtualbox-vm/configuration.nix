@@ -3,6 +3,12 @@
 {
   imports = [ ./hardware-configuration.nix ];
 
+  users.users.jkpth = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "networkmanager" ];
+    shell = pkgs.zsh;
+  };
+
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   networking.hostName = "virtualbox-vm";
