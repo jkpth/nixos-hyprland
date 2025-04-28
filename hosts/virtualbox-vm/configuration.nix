@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports = [ ./hardware-configuration.nix ];
@@ -12,6 +12,12 @@
   # Boot configuration
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  # Conditional boot partition (remove for VM)
+  fileSystems."/boot" = lib.mkIf (!config.virtualisation.isVirtual) {
+    device = "/dev/sdX1"; # Adjust as needed for physical machines
+    fsType = "ext4";
+  };
 
   # Networking
   networking.hostName = "nixos-vm";
