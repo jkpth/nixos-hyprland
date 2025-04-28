@@ -27,6 +27,11 @@ echo "WARNING: This script will erase all data on /dev/sda and create new partit
 echo "Press Enter to continue, or Ctrl+C to abort."
 read
 
+# Disable automatic mounting services (e.g., udisks) to prevent remounting
+echo "Disabling automatic mounting services..."
+systemctl stop udisks2 2>/dev/null
+systemctl stop udisksd 2>/dev/null
+
 # Partition /dev/sda (512M ESP, 60G root, remaining swap)
 echo "Partitioning /dev/sda..."
 echo -e "g\nn\n1\n\n+512M\nt\n1\nn\n2\n\n+60G\nn\n3\n\n\nt\n3\n82\nw" | fdisk /dev/sda
@@ -35,12 +40,17 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Log partition table for debugging
+echo "Current partition table:"
+fdisk -l /dev/sda
+
 # Ensure /dev/sda1 (ESP) is not mounted before formatting
 echo "Checking if /dev/sda1 is mounted..."
 mount | grep /dev/sda1 || echo "/dev/sda1 not found in mount list."
-if mountpoint -q /dev/sda1 2>/dev/null || grep -q "/dev/sda1" /proc/mounts; then
+lsblk /dev/sda1 -o MOUNTPOINT | grep -v MOUNTPOINT || echo "/dev/sda1 has no mountpoint in lsblk."
+if mountpoint -q /dev/sda1 2>/dev/null || grep -q "/dev/sda1" /proc/mounts || [ -n "$(lsblk -no MOUNTPOINT /dev/sda1)" ]; then
     echo "Unmounting /dev/sda1..."
-    umount /dev/sda1 2>/dev/null
+    umount /dev/sda1
     if [ $? -ne 0 ]; then
         echo "Failed to unmount /dev/sda1. Please unmount manually and rerun the script."
         exit 1
@@ -58,9 +68,10 @@ fi
 # Ensure /dev/sda2 (root) is not mounted before formatting
 echo "Checking if /dev/sda2 is mounted..."
 mount | grep /dev/sda2 || echo "/dev/sda2 not found in mount list."
-if mountpoint -q /dev/sda2 2>/dev/null || grep -q "/dev/sda2" /proc/mounts; then
+lsblk /dev/sda2 -o MOUNTPOINT | grep -v MOUNTPOINT || echo "/dev/sda2 has no mountpoint in lsblk."
+if mountpoint -q /dev/sda2 2>/dev/null || grep -q "/dev/sda2" /proc/mounts || [ -n "$(lsblk -no MOUNTPOINT /dev/sda2)" ]; then
     echo "Unmounting /dev/sda2..."
-    umount /dev/sda2 2>/dev/null
+    umount /dev/sda2
     if [ $? -ne 0 ]; then
         echo "Failed to unmount /dev/sda2. Please unmount manually and rerun the script."
         exit 1
@@ -68,6 +79,11 @@ if mountpoint -q /dev/sda2 2>/dev/null || grep -q "/dev/sda2" /proc/mounts; then
 else
     echo "No mount detected for /dev/sda2, but double-checking..."
     umount /dev/sda2 2>/dev/null
+    if [ -n "$(lsblk -no MOUNTPOINT /dev/sda2)" ]; then
+        echo "Mount still detected after umount attempt:"
+        lsblk /dev/sda2
+        exit 1
+    fi
 fi
 
 # Format root partition
@@ -81,9 +97,10 @@ fi
 # Ensure /dev/sda3 is not mounted or in use as swap
 echo "Checking if /dev/sda3 is mounted or in use as swap..."
 mount | grep /dev/sda3 || echo "/dev/sda3 not found in mount list."
-if mountpoint -q /dev/sda3 2>/dev/null || grep -q "/dev/sda3" /proc/mounts; then
+lsblk /dev/sda3 -o MOUNTPOINT | grep -v MOUNTPOINT || echo "/dev/sda3 has no mountpoint in lsblk."
+if mountpoint -q /dev/sda3 2>/dev/null || grep -q "/dev/sda3" /proc/mounts || [ -n "$(lsblk -no MOUNTPOINT /dev/sda3)" ]; then
     echo "Unmounting /dev/sda3..."
-    umount /dev/sda3 2>/dev/null
+    umount /dev/sda3
     if [ $? -ne 0 ]; then
         echo "Failed to unmount /dev/sda3. Please unmount manually and rerun the script."
         exit 1
@@ -91,7 +108,7 @@ if mountpoint -q /dev/sda3 2>/dev/null || grep -q "/dev/sda3" /proc/mounts; then
 fi
 if grep -q "/dev/sda3" /proc/swaps; then
     echo "Disabling swap on /dev/sda3..."
-    swapoff /dev/sda3 2>/dev/null
+    swapoff /dev/sda3
     if [ $? -ne 0 ]; then
         echo "Failed to disable swap on /dev/sda3. Please disable swap manually and rerun the script."
         exit 1
