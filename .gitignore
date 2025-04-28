@@ -1,0 +1,13 @@
+# Nix
+result
+flake.lock
+
+# Editor files
+*.swp
+*~
+.vscode/
+.idea/
+
+# Misc
+*.bak
+*.log
