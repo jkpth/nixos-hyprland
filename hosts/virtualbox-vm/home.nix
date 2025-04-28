@@ -6,6 +6,11 @@
   home.username = "jkpth";
   home.homeDirectory = "/home/jkpth";
 
+  imports = [
+    ../../modules/home/hyprland.nix
+  ];
+
+
   programs.zsh.enable = true;
   programs.git.enable = true;
   programs.neovim.enable = true;
