@@ -245,9 +245,38 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Clean up mounts before reboot
+echo "Cleaning up mounts before reboot..."
+umount /mnt/boot 2>/dev/null
+umount /mnt 2>/dev/null
+swapoff /dev/sda3 2>/dev/null
+
+# Unmount the live ISO
+echo "Unmounting the live ISO..."
+mount | grep /iso || echo "/iso not found in mount list."
+if mountpoint -q /iso 2>/dev/null || grep -q "/iso" /proc/mounts; then
+    echo "Unmounting /iso..."
+    lsof /iso 2>/dev/null || echo "No processes using /iso."
+    fuser -m /iso 2>/dev/null || echo "No processes using /iso (fuser)."
+    umount /iso 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Regular unmount of /iso failed, attempting lazy unmount..."
+        umount -l /iso 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Lazy unmount of /iso failed, attempting forced unmount..."
+            umount -f /iso 2>&1
+            if [ $? -ne 0 ]; then
+                echo "Failed to unmount /iso. Please unmount manually and reboot."
+                exit 1
+            fi
+        fi
+    fi
+fi
+
 # Inform the user
 echo "NixOS installation complete! The system will reboot in 10 seconds."
 echo "After reboot, log in as 'jkpth' with password 'password' (change it in configuration.nix)."
+echo "Ensure the VM is set to boot from the disk (/dev/sda) and not the ISO."
 sleep 10
 
 # Reboot
