@@ -1,7 +1,9 @@
 { config, pkgs, ... }:
 
 {
-  imports = [];
+  imports = [
+    ./hardware-configuration.nix # Import the generated hardware config
+  ];
 
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -26,6 +28,11 @@
     package = pkgs.hyprland;
   };
 
+  # Enable a display manager (GDM) to start Hyprland
+  services.xserver.enable = true;
+  services.xserver.displayManager.gdm.enable = true;
+  services.xserver.displayManager.gdm.wayland = true;
+
   # Basic system packages
   environment.systemPackages = with pkgs; [
     vim
@@ -35,6 +42,9 @@
     firefox
   ];
 
+  # Enable sound
+  sound.enable = true;
+  hardware.pulseaudio.enable = true;
 
   # Enable OpenGL for Wayland
   hardware.opengl.enable = true;
