@@ -2,7 +2,7 @@
 
 {
   home.username = "jkpth";
-  home.homeDirectory = "/homedoi/jkpth";
+  home.homeDirectory = "/home/jkpth";
 
   # Home-manager state version
   home.stateVersion = "24.11";
