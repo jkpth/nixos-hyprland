@@ -35,6 +35,17 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Ensure /dev/sda1 is not mounted before formatting
+echo "Checking if /dev/sda1 is mounted..."
+if mountpoint -q /dev/sda1 2>/dev/null || grep -q "/dev/sda1" /proc/mounts; then
+    echo "Unmounting /dev/sda1..."
+    umount /dev/sda1 2>/dev/null
+    if [ $? -ne 0 ]; then
+        echo "Failed to unmount /dev/sda1. Please unmount manually and rerun the script."
+        exit 1
+    fi
+fi
+
 # Format partitions
 echo "Formatting root partition (/dev/sda1) as ext4..."
 mkfs.ext4 /dev/sda1
