@@ -13,12 +13,6 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Conditional boot partition (remove for VM)
-  fileSystems."/boot" = lib.mkIf (!config.virtualisation.isVirtual) {
-    device = "/dev/sda1"; # Adjust as needed
-    fsType = "ext4";
-  };
-
   # Networking
   networking.hostName = "nixos-vm";
   networking.networkmanager.enable = true;
