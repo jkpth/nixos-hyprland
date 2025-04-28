@@ -15,7 +15,7 @@
 
   # Conditional boot partition (remove for VM)
   fileSystems."/boot" = lib.mkIf (!config.virtualisation.isVirtual) {
-    device = "/dev/sdX1"; # Adjust as needed for physical machines
+    device = "/dev/sda1"; # Adjust as needed
     fsType = "ext4";
   };
 
