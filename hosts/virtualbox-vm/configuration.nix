@@ -10,13 +10,16 @@
   nixpkgs.config.allowUnfree = true;
 
   # Boot configuration
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  # Explicitly set /boot partition
-  fileSystems."/boot" = {
-    device = "/dev/sda1";
-    fsType = "ext4";
+  boot.loader = {
+    # Use GRUB which is more flexible for different setups
+    grub = {
+      enable = true;
+      device = "/dev/sda";  # Install GRUB to the MBR of sda
+      useOSProber = true;   # Detect other operating systems
+    };
+    # Disable systemd-boot
+    systemd-boot.enable = false;
+    efi.canTouchEfiVariables = false;
   };
 
   # Networking
