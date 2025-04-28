@@ -38,7 +38,6 @@
   # Enable Wayland
   services.xserver.enable = true;
   services.xserver.displayManager.sddm.enable = true; #lightweight DM
-  services.desktopManager.plasma5.enable = false; # explicitly off
   services.displayManager.defaultSession = "hyprland";
 
   xdg.portal = {
