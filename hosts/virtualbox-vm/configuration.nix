@@ -36,7 +36,7 @@
   system.stateVersion = "24.05";
   # Enable Wayland
   services.xserver.enable = true;
-  services.xserver.displayManager.sddm.enable = true; #lightweight DM
+  services.displayManager.sddm.enable = true; #lightweight DM
   services.displayManager.defaultSession = "hyprland";
 
   xdg.portal = {
