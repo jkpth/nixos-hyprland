@@ -66,6 +66,7 @@ if mountpoint -q /dev/sda2 2>/dev/null || grep -q "/dev/sda2" /proc/mounts; then
 fi
 
 # Format swap partition
+echo "NEW VERSION..."
 echo "Formatting swap partition (/dev/sda2)..."
 mkswap /dev/sda2
 if [ $? -ne 0 ]; then
