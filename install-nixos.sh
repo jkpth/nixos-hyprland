@@ -54,8 +54,8 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Ensure /dev/sda2 is not mounted before formatting as swap
-echo "Checking if /dev/sda2 is mounted..."
+# Ensure /dev/sda2 is not mounted or in use as swap
+echo "Checking if /dev/sda2 is mounted or in use as swap..."
 if mountpoint -q /dev/sda2 2>/dev/null || grep -q "/dev/sda2" /proc/mounts; then
     echo "Unmounting /dev/sda2..."
     umount /dev/sda2 2>/dev/null
@@ -64,9 +64,16 @@ if mountpoint -q /dev/sda2 2>/dev/null || grep -q "/dev/sda2" /proc/mounts; then
         exit 1
     fi
 fi
+if grep -q "/dev/sda2" /proc/swaps; then
+    echo "Disabling swap on /dev/sda2..."
+    swapoff /dev/sda2 2>/dev/null
+    if [ $? -ne 0 ]; then
+        echo "Failed to disable swap on /dev/sda2. Please disable swap manually and rerun the script."
+        exit 1
+    fi
+fi
 
 # Format swap partition
-echo "NEW VERSION..."
 echo "Formatting swap partition (/dev/sda2)..."
 mkswap /dev/sda2
 if [ $? -ne 0 ]; then
