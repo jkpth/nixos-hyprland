@@ -41,5 +41,11 @@ You can further customize this setup by editing:
 After making changes, rebuild with:
 
 ```bash
+# For regular updates
 sudo nixos-rebuild switch --flake ~/nixos-config#virtualbox-vm
-``` 
+
+# For updates with unfree packages (like Spotify)
+NIXPKGS_ALLOW_UNFREE=1 sudo nixos-rebuild switch --impure --flake ~/nixos-config#virtualbox-vm
+```
+
+Note: The `--impure` flag and `NIXPKGS_ALLOW_UNFREE=1` environment variable are required when using unfree packages with flakes. 

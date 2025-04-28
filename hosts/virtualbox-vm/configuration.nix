@@ -77,6 +77,7 @@
 
   # Environment variables for Wayland
   environment.sessionVariables = {
+    NIXPKGS_ALLOW_UNFREE = "1";
     # For Electron-based applications
     NIXOS_OZONE_WL = "1";
     # For Virtualbox
