@@ -34,7 +34,8 @@ systemctl stop udisksd 2>/dev/null
 
 # Partition /dev/sda (512M ESP, 60G root, remaining swap)
 echo "Partitioning /dev/sda..."
-echo -e "g\nn\n1\n\n+512M\nt\n1\nn\n2\n\n+60G\nn\n3\n\n\nt\n3\n82\nw" | fdisk /dev/sda
+# Explicitly set partition types: 1 for ESP, 83 for root (Linux filesystem), 82 for swap
+echo -e "g\nn\n1\n\n+512M\nt\n1\n1\nn\n2\n\n+60G\nt\n2\n83\nn\n3\n\n\nt\n3\n82\nw" | fdisk /dev/sda
 if [ $? -ne 0 ]; then
     echo "Failed to partition /dev/sda."
     exit 1
@@ -50,10 +51,21 @@ mount | grep /dev/sda1 || echo "/dev/sda1 not found in mount list."
 lsblk /dev/sda1 -o MOUNTPOINT | grep -v MOUNTPOINT || echo "/dev/sda1 has no mountpoint in lsblk."
 if mountpoint -q /dev/sda1 2>/dev/null || grep -q "/dev/sda1" /proc/mounts || [ -n "$(lsblk -no MOUNTPOINT /dev/sda1)" ]; then
     echo "Unmounting /dev/sda1..."
-    umount /dev/sda1
+    # Check for processes using /dev/sda1
+    lsof /dev/sda1 2>/dev/null || echo "No processes using /dev/sda1."
+    fuser -m /dev/sda1 2>/dev/null || echo "No processes using /dev/sda1 (fuser)."
+    umount /dev/sda1 2>&1
     if [ $? -ne 0 ]; then
-        echo "Failed to unmount /dev/sda1. Please unmount manually and rerun the script."
-        exit 1
+        echo "Regular unmount failed, attempting lazy unmount..."
+        umount -l /dev/sda1 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Lazy unmount failed, attempting forced unmount..."
+            umount -f /dev/sda1 2>&1
+            if [ $? -ne 0 ]; then
+                echo "Failed to unmount /dev/sda1. Please unmount manually and rerun the script."
+                exit 1
+            fi
+        fi
     fi
 fi
 
@@ -71,10 +83,21 @@ mount | grep /dev/sda2 || echo "/dev/sda2 not found in mount list."
 lsblk /dev/sda2 -o MOUNTPOINT | grep -v MOUNTPOINT || echo "/dev/sda2 has no mountpoint in lsblk."
 if mountpoint -q /dev/sda2 2>/dev/null || grep -q "/dev/sda2" /proc/mounts || [ -n "$(lsblk -no MOUNTPOINT /dev/sda2)" ]; then
     echo "Unmounting /dev/sda2..."
-    umount /dev/sda2
+    # Check for processes using /dev/sda2
+    lsof /dev/sda2 2>/dev/null || echo "No processes using /dev/sda2."
+    fuser -m /dev/sda2 2>/dev/null || echo "No processes using /dev/sda2 (fuser)."
+    umount /dev/sda2 2>&1
     if [ $? -ne 0 ]; then
-        echo "Failed to unmount /dev/sda2. Please unmount manually and rerun the script."
-        exit 1
+        echo "Regular unmount failed, attempting lazy unmount..."
+        umount -l /dev/sda2 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Lazy unmount failed, attempting forced unmount..."
+            umount -f /dev/sda2 2>&1
+            if [ $? -ne 0 ]; then
+                echo "Failed to unmount /dev/sda2. Please unmount manually and rerun the script."
+                exit 1
+            fi
+        fi
     fi
 else
     echo "No mount detected for /dev/sda2, but double-checking..."
@@ -100,15 +123,26 @@ mount | grep /dev/sda3 || echo "/dev/sda3 not found in mount list."
 lsblk /dev/sda3 -o MOUNTPOINT | grep -v MOUNTPOINT || echo "/dev/sda3 has no mountpoint in lsblk."
 if mountpoint -q /dev/sda3 2>/dev/null || grep -q "/dev/sda3" /proc/mounts || [ -n "$(lsblk -no MOUNTPOINT /dev/sda3)" ]; then
     echo "Unmounting /dev/sda3..."
-    umount /dev/sda3
+    # Check for processes using /dev/sda3
+    lsof /dev/sda3 2>/dev/null || echo "No processes using /dev/sda3."
+    fuser -m /dev/sda3 2>/dev/null || echo "No processes using /dev/sda3 (fuser)."
+    umount /dev/sda3 2>&1
     if [ $? -ne 0 ]; then
-        echo "Failed to unmount /dev/sda3. Please unmount manually and rerun the script."
-        exit 1
+        echo "Regular unmount failed, attempting lazy unmount..."
+        umount -l /dev/sda3 2>&1
+        if [ $? -ne 0 ]; then
+            echo "Lazy unmount failed, attempting forced unmount..."
+            umount -f /dev/sda3 2>&1
+            if [ $? -ne 0 ]; then
+                echo "Failed to unmount /dev/sda3. Please unmount manually and rerun the script."
+                exit 1
+            fi
+        fi
     fi
 fi
 if grep -q "/dev/sda3" /proc/swaps; then
     echo "Disabling swap on /dev/sda3..."
-    swapoff /dev/sda3
+    swapoff /dev/sda3 2>&1
     if [ $? -ne 0 ]; then
         echo "Failed to disable swap on /dev/sda3. Please disable swap manually and rerun the script."
         exit 1
