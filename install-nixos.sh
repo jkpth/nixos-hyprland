@@ -46,7 +46,7 @@ if mountpoint -q /dev/sda1 2>/dev/null || grep -q "/dev/sda1" /proc/mounts; then
     fi
 fi
 
-# Format partitions
+# Format root partition
 echo "Formatting root partition (/dev/sda1) as ext4..."
 mkfs.ext4 /dev/sda1
 if [ $? -ne 0 ]; then
@@ -54,11 +54,29 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Ensure /dev/sda2 is not mounted before formatting as swap
+echo "Checking if /dev/sda2 is mounted..."
+if mountpoint -q /dev/sda2 2>/dev/null || grep -q "/dev/sda2" /proc/mounts; then
+    echo "Unmounting /dev/sda2..."
+    umount /dev/sda2 2>/dev/null
+    if [ $? -ne 0 ]; then
+        echo "Failed to unmount /dev/sda2. Please unmount manually and rerun the script."
+        exit 1
+    fi
+fi
+
+# Format swap partition
 echo "Formatting swap partition (/dev/sda2)..."
 mkswap /dev/sda2
-swapon /dev/sda2
 if [ $? -ne 0 ]; then
     echo "Failed to set up swap on /dev/sda2."
+    exit 1
+fi
+
+echo "Enabling swap on /dev/sda2..."
+swapon /dev/sda2
+if [ $? -ne 0 ]; then
+    echo "Failed to enable swap on /dev/sda2."
     exit 1
 fi
 
