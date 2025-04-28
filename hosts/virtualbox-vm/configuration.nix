@@ -13,6 +13,12 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Explicitly set /boot partition
+  fileSystems."/boot" = {
+    device = "/dev/sda1";
+    fsType = "ext4";
+  };
+
   # Networking
   networking.hostName = "nixos-vm";
   networking.networkmanager.enable = true;
