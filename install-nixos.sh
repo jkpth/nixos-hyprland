@@ -37,6 +37,7 @@ fi
 
 # Ensure /dev/sda1 (ESP) is not mounted before formatting
 echo "Checking if /dev/sda1 is mounted..."
+mount | grep /dev/sda1 || echo "/dev/sda1 not found in mount list."
 if mountpoint -q /dev/sda1 2>/dev/null || grep -q "/dev/sda1" /proc/mounts; then
     echo "Unmounting /dev/sda1..."
     umount /dev/sda1 2>/dev/null
@@ -56,6 +57,7 @@ fi
 
 # Ensure /dev/sda2 (root) is not mounted before formatting
 echo "Checking if /dev/sda2 is mounted..."
+mount | grep /dev/sda2 || echo "/dev/sda2 not found in mount list."
 if mountpoint -q /dev/sda2 2>/dev/null || grep -q "/dev/sda2" /proc/mounts; then
     echo "Unmounting /dev/sda2..."
     umount /dev/sda2 2>/dev/null
@@ -63,6 +65,9 @@ if mountpoint -q /dev/sda2 2>/dev/null || grep -q "/dev/sda2" /proc/mounts; then
         echo "Failed to unmount /dev/sda2. Please unmount manually and rerun the script."
         exit 1
     fi
+else
+    echo "No mount detected for /dev/sda2, but double-checking..."
+    umount /dev/sda2 2>/dev/null
 fi
 
 # Format root partition
@@ -75,6 +80,7 @@ fi
 
 # Ensure /dev/sda3 is not mounted or in use as swap
 echo "Checking if /dev/sda3 is mounted or in use as swap..."
+mount | grep /dev/sda3 || echo "/dev/sda3 not found in mount list."
 if mountpoint -q /dev/sda3 2>/dev/null || grep -q "/dev/sda3" /proc/mounts; then
     echo "Unmounting /dev/sda3..."
     umount /dev/sda3 2>/dev/null
