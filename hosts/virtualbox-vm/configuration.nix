@@ -22,9 +22,57 @@
     wget
     zsh
     firefox
+    hyprpaper
+    mako
+    grim
+    slurp
+    wl-clipboard
   ];
 
   services.openssh.enable = true;
 
   system.stateVersion = "24.05";
+  # Enable Wayland
+  services.xserver.enable = true;
+  services.xserver.displayManager.sddm.enable = true; #lightweight DM
+  services.desktopManager.plasma5.enable = false; # explicitly off
+  services.displayManager.defaultSession = "hyprland";
+
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+  };
+
+
+  # Enable Hyprland
+  programs.hyprland.enable = true;
+
+  # Set environment variables needed for Wayland apps
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1"; # Makes electron apps like VSCode work
+    WLR_NO_HARDWARE_CURSORS = "1"; # Fix cursor glitches sometimes
+  };
+
+  # Basic apps needed on Wayland
+  programs.waybar.enable = true;
+  programs.wofi.enable = true;
+  programs.alacritty.enable = true;
+  services.dbus.enable = true;
+
+  # Wallpaper daemon
+  services.hyprpaper.enable = true;
+
+  # Fonts
+  fonts.packages = with pkgs; [
+    noto-fonts
+    noto-fonts-emoji
+    liberation_ttf
+  ];
+
+  # Sound 
+  sound.enable = true;
+  hardware.pulseaudio.enable = true;
+
+
+
 }
