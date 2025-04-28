@@ -35,9 +35,6 @@
     firefox
   ];
 
-  # Enable sound
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
 
   # Enable OpenGL for Wayland
   hardware.opengl.enable = true;
