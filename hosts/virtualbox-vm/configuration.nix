@@ -28,6 +28,8 @@
     slurp
     wl-clipboard
     alacritty
+    wofi
+    waybar
   ];
 
   services.openssh.enable = true;
@@ -54,9 +56,7 @@
     WLR_NO_HARDWARE_CURSORS = "1"; # Fix cursor glitches sometimes
   };
 
-  # Basic apps needed on Wayland
-  programs.waybar.enable = true;
-  programs.wofi.enable = true;
+  # Basic apps
   services.dbus.enable = true;
 
   # Wallpaper daemon
