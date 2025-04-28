@@ -34,10 +34,23 @@ systemctl stop udisksd 2>/dev/null
 
 # Partition /dev/sda (512M ESP, 60G root, remaining swap)
 echo "Partitioning /dev/sda..."
-# Create partitions and set types explicitly
-echo -e "g\nn\n1\n\n+512M\nt\n1\nn\n2\n\n+60G\nt\n2\n83\nn\n3\n\n\nt\n3\n82\nw\n" | fdisk /dev/sda
+# Create all partitions first, then set types
+echo -e "g\nn\n1\n\n+512M\nn\n2\n\n+60G\nn\n3\n\n\nt\n1\n1\nt\n2\n83\nt\n3\n82\nw\n" | fdisk /dev/sda
 if [ $? -ne 0 ]; then
     echo "Failed to partition /dev/sda."
+    exit 1
+fi
+
+# Notify the kernel of partition table changes
+echo "Notifying kernel of partition table changes..."
+partprobe /dev/sda 2>/dev/null || blockdev --rereadpt /dev/sda 2>/dev/null
+sleep 2  # Wait for the kernel to update
+
+# Verify that /dev/sda3 exists
+echo "Verifying partition devices..."
+ls /dev/sda* || echo "Failed to list /dev/sda devices."
+if [ ! -b /dev/sda3 ]; then
+    echo "/dev/sda3 does not exist as a block device. Partition table update may have failed."
     exit 1
 fi
 
