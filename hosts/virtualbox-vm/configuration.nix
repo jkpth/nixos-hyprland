@@ -6,6 +6,9 @@
   # System version
   system.stateVersion = "24.05";
 
+  # Allow unfree packages (needed for Spotify)
+  nixpkgs.config.allowUnfree = true;
+
   # Boot configuration
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
