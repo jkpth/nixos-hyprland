@@ -27,6 +27,7 @@
     grim
     slurp
     wl-clipboard
+    alacritty
   ];
 
   services.openssh.enable = true;
@@ -56,7 +57,6 @@
   # Basic apps needed on Wayland
   programs.waybar.enable = true;
   programs.wofi.enable = true;
-  programs.alacritty.enable = true;
   services.dbus.enable = true;
 
   # Wallpaper daemon
