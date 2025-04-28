@@ -26,7 +26,9 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.users.user = import ./home.nix;
+          home-manager.users.jkpth = import ./home.nix;
+          # Explicitly set the user to avoid conflicts
+          home-manager.extraSpecialArgs = { username = "jkpth"; };
         }
       ];
     };

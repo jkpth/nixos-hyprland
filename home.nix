@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
 
 {
-  home.username = "user";
-  home.homeDirectory = "/home/user";
+  home.username = "jkpth";
+  home.homeDirectory = "/homedoi/jkpth";
 
   # Home-manager state version
   home.stateVersion = "24.11";

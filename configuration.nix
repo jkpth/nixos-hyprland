@@ -45,8 +45,8 @@
   # User account
   users.users.jkpth = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "video" "input" ];
-    shell = pkgs.zsh;
+    extraGroups = [ "wheel" "networkmanager" ];
+    password = "password"; # Change this, jkpth!
   };
 
   # System state version
