@@ -22,7 +22,6 @@
     wget
     zsh
     firefox
-    hyprpaper
     mako
     grim
     slurp
@@ -57,9 +56,6 @@
 
   # Basic apps
   services.dbus.enable = true;
-
-  # Wallpaper daemon
-  services.hyprpaper.enable = true;
 
   # Fonts
   fonts.packages = with pkgs; [
