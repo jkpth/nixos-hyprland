@@ -14,7 +14,7 @@
     jq
     
     # GUI applications
-    spotify
+    
     vlc
     
     # Utilities
