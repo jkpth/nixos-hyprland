@@ -253,44 +253,13 @@ else
     echo "Warning: Bootloader installation could not be verified. You may need to reinstall the bootloader manually."
 fi
 
-# Clean up mounts before reboot
-echo "Cleaning up mounts before reboot..."
+# Clean up mounts before finishing
+echo "Cleaning up mounts..."
 umount /mnt/boot 2>/dev/null
 umount /mnt 2>/dev/null
 swapoff /dev/sda3 2>/dev/null
 
-# Unmount the live ISO and ensure no processes are holding it
-echo "Unmounting the live ISO..."
-mount | grep /iso || echo "/iso not found in mount list."
-if mountpoint -q /iso 2>/dev/null || grep -q "/iso" /proc/mounts; then
-    echo "Unmounting /iso..."
-    # Check for processes using /iso
-    lsof /iso 2>/dev/null || echo "No processes using /iso (lsof)."
-    fuser -m /iso 2>/dev/null || echo "No processes using /iso (fuser)."
-    # Try regular unmount
-    umount /iso 2>&1
-    if [ $? -ne 0 ]; then
-        echo "Regular unmount of /iso failed, attempting to kill processes holding /iso..."
-        fuser -km /iso 2>/dev/null
-        sleep 1
-        umount /iso 2>&1
-        if [ $? -ne 0 ]; then
-            echo "Second unmount attempt failed, attempting lazy unmount..."
-            umount -l /iso 2>&1
-            if [ $? -ne 0 ]; then
-                echo "Lazy unmount of /iso failed, attempting forced unmount..."
-                umount -f /iso 2>&1
-                if [ $? -ne 0 ]; then
-                    echo "Failed to unmount /iso. Please unmount manually and reboot."
-                    echo "To unmount manually, run: fuser -km /iso && umount /iso"
-                    exit 1
-                fi
-            fi
-        fi
-    fi
-fi
-
-# Check for any remaining mounts that might interfere
+# Check for any remaining mounts
 echo "Checking for remaining mounts..."
 mount | grep -E "/mnt|/dev/sda" || echo "No remaining mounts on /mnt or /dev/sda."
 if mountpoint -q /mnt 2>/dev/null || grep -q "/mnt" /proc/mounts; then
@@ -299,11 +268,16 @@ if mountpoint -q /mnt 2>/dev/null || grep -q "/mnt" /proc/mounts; then
 fi
 
 # Inform the user
-echo "NixOS installation complete! The system will reboot in 10 seconds."
-echo "After reboot, log in as 'jkpth' with password 'password' (change it in configuration.nix)."
-echo "Ensure the VM is set to boot from the disk (/dev/sda) and not the ISO."
-echo "To adjust boot order: Shut down the VM, remove the ISO from the CD/DVD drive in VM settings, and set the disk as the first boot device."
-sleep 10
+echo "NixOS installation complete!"
+echo "Next steps:"
+echo "1. Shut down the VM: Run 'poweroff' or shut down via your VM software."
+echo "2. Remove the NixOS ISO from the VM's CD/DVD drive in your VM settings."
+echo "   - In VirtualBox/VMware/QEMU, go to the VM settings, set the CD/DVD drive to 'Empty'."
+echo "3. Ensure the VM is set to boot from the disk (/dev/sda):"
+echo "   - In VM settings, set the boot order to prioritize the hard disk over the CD/DVD drive."
+echo "4. Start the VM to boot into the installed system."
+echo "After booting, log in as 'jkpth' with password 'password' (change it in configuration.nix)."
+echo "Select the Hyprland session at the login screen to start your desktop environment."
 
-# Reboot
-reboot
+# Do not reboot automatically; let the user handle it
+exit 0
