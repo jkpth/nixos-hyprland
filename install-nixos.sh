@@ -245,38 +245,65 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Verify bootloader installation
+echo "Verifying bootloader installation..."
+if [ -d "/mnt/boot/grub" ] || [ -f "/mnt/boot/loader/loader.conf" ]; then
+    echo "Bootloader appears to be installed (GRUB or systemd-boot detected)."
+else
+    echo "Warning: Bootloader installation could not be verified. You may need to reinstall the bootloader manually."
+fi
+
 # Clean up mounts before reboot
 echo "Cleaning up mounts before reboot..."
 umount /mnt/boot 2>/dev/null
 umount /mnt 2>/dev/null
 swapoff /dev/sda3 2>/dev/null
 
-# Unmount the live ISO
+# Unmount the live ISO and ensure no processes are holding it
 echo "Unmounting the live ISO..."
 mount | grep /iso || echo "/iso not found in mount list."
 if mountpoint -q /iso 2>/dev/null || grep -q "/iso" /proc/mounts; then
     echo "Unmounting /iso..."
-    lsof /iso 2>/dev/null || echo "No processes using /iso."
+    # Check for processes using /iso
+    lsof /iso 2>/dev/null || echo "No processes using /iso (lsof)."
     fuser -m /iso 2>/dev/null || echo "No processes using /iso (fuser)."
+    # Try regular unmount
     umount /iso 2>&1
     if [ $? -ne 0 ]; then
-        echo "Regular unmount of /iso failed, attempting lazy unmount..."
-        umount -l /iso 2>&1
+        echo "Regular unmount of /iso failed, attempting to kill processes holding /iso..."
+        fuser -km /iso 2>/dev/null
+        sleep 1
+        umount /iso 2>&1
         if [ $? -ne 0 ]; then
-            echo "Lazy unmount of /iso failed, attempting forced unmount..."
-            umount -f /iso 2>&1
+            echo "Second unmount attempt failed, attempting lazy unmount..."
+            umount -l /iso 2>&1
             if [ $? -ne 0 ]; then
-                echo "Failed to unmount /iso. Please unmount manually and reboot."
-                exit 1
+                echo "Lazy unmount of /iso failed, attempting forced unmount..."
+                umount -f /iso 2>&1
+                if [ $? -ne 0 ]; then
+                    echo "Failed to unmount /iso. Please unmount manually and reboot."
+                    echo "To unmount manually, run: fuser -km /iso && umount /iso"
+                    exit 1
+                fi
             fi
         fi
     fi
+fi
+
+# Check for any remaining mounts that might interfere
+echo "Checking for remaining mounts..."
+mount | grep -E "/mnt|/dev/sda" || echo "No remaining mounts on /mnt or /dev/sda."
+if mountpoint -q /mnt 2>/dev/null || grep -q "/mnt" /proc/mounts; then
+    echo "Unmounting /mnt again..."
+    umount /mnt 2>&1
 fi
 
 # Inform the user
 echo "NixOS installation complete! The system will reboot in 10 seconds."
 echo "After reboot, log in as 'jkpth' with password 'password' (change it in configuration.nix)."
 echo "Ensure the VM is set to boot from the disk (/dev/sda) and not the ISO."
+echo "To adjust boot order: Shut down the VM, remove the ISO from the CD/DVD drive in VM settings, and set the disk as the first boot device."
 sleep 10
 
-poweroff
+# Reboot
+reboot
