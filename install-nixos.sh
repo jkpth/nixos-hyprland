@@ -279,5 +279,4 @@ echo "After reboot, log in as 'jkpth' with password 'password' (change it in con
 echo "Ensure the VM is set to boot from the disk (/dev/sda) and not the ISO."
 sleep 10
 
-# Reboot
-reboot
+poweroff
